@@ -4,7 +4,7 @@ import pygame
 
 
 class MineSweeper():
-    def __init__(self, width=30, height=16, tile_size=25, proba=0.85):
+    def __init__(self, width=30, height=16, tile_size=25, proba=0.86):
         # proba: easy=0.90, medium=0.86, hard=0.83
         self.width = width
         self.height = height
@@ -13,6 +13,7 @@ class MineSweeper():
         self.attributeValue()
 
         self.gameFailed = False
+        self.gameWon = False
         self.marge = 15
         self.tileSize = tile_size
         self.tileMarge = 1.5
@@ -37,6 +38,9 @@ class MineSweeper():
                           (20, 20, 20),
                           (20, 20, 20)]
         self.bombColor = (10, 10, 10)
+        self.endTextColor = (20, 20, 20)
+        self.endRectangleColor = (220, 220, 220)
+        self.endText = "you win!"
 
     def game_loop(self):
         pygame.init()
@@ -51,7 +55,7 @@ class MineSweeper():
                     pos = pygame.mouse.get_pos()
                     x = int((pos[1] - self.marge) / self.tileSize)
                     y = int((pos[0] - self.marge) / self.tileSize)
-                    if self.gameFailed:
+                    if self.gameFailed or self.gameWon:
                         self.__init__()
                         self.game_loop()
                     if event.button == 1:
@@ -61,6 +65,8 @@ class MineSweeper():
                         self.right_click_register(x, y)
                     if self.gameFailed is False:
                         self.display_tiles()
+                    if self.win_test():
+                        self.win_screen()
 
     def init_display(self):
         self.display_background()
@@ -86,14 +92,15 @@ class MineSweeper():
             pygame.Rect((
                 (self.marge + self.tileSize * x + self.tileMarge, self.marge + self.tileSize * y + self.tileMarge),
                 (self.tileSize - self.tileMarge * 2, self.tileSize - self.tileMarge * 2)
-            )))
+        )))
 
         if self.clickedGrid[y][x] is True:
             if type(self.grid[y][x]) is int:
-                self.window.blit(self.arialFont.render(str(self.grid[y][x]), False,
+                self.window.blit(
+                    self.arialFont.render(str(self.grid[y][x]), False,
                     self.textColor[self.grid[y][x] - 1]),
                     (self.marge + self.tileSize * x + self.tileMarge + self.tileSize * 5/30,
-                     self.marge + self.tileSize * y + self.tileMarge - self.tileSize * 5/30)
+                    self.marge + self.tileSize * y + self.tileMarge - self.tileSize * 5/30)
                 )
 
         elif self.clickedGrid[y][x] == "F":
@@ -133,7 +140,6 @@ class MineSweeper():
                         self.click_register(u, v)
 
     def show_bombs(self):
-        # remember flags
         for x in range(self.width):
             for y in range(self.height):
                 if self.grid[y][x] == '*':
@@ -150,31 +156,19 @@ class MineSweeper():
     def win_test(self):
         for x in range(self.width):
             for y in range(self.height):
-                pass #TODO
+                if (self.grid[y][x] == '*' and self.clickedGrid[y][x] != 'F') or \
+                    (self.clickedGrid[y][x] == 'F' and self.grid[y][x] != '*') or \
+                    (self.clickedGrid[y][x] is False and self.grid[y][x] != '*'):
+                    return False
+        self.gameWon = True
+        return True
 
-    def display(self):
-        for x in self.grid:
-            for y in x:
-                print(y, end=' ')
-            print()
+    def win_screen(self):
+        text = self.arialFont.render(self.endText, True, self.endTextColor)
+        text_rect = text.get_rect(center=(self.windowWidth/2, self.windowHeight/2))
 
-    def advancedDisplay(self):
-        for x in self.grid:
-            for y in x:
-                if y == 1:
-                    p = '\033[94m1\033[0m'
-                elif y == 2:
-                    p = '\033[92m2\033[0m'
-                elif y == 3:
-                    p = '\033[91m3\033[0m'
-                elif y == 4:
-                    p = '\033[94m4\033[0m'
-                elif y == 5:
-                    p = '\033[92m5\033[0m'
-                else:
-                    p = y
-                print(p, end=' ')
-            print()
+        self.window.fill(self.endRectangleColor, text_rect)
+        self.window.blit(text, text_rect)
 
     def attributeValue(self):
         for x in range(len(self.grid)):
