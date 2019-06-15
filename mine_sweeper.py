@@ -1,7 +1,5 @@
 
-import random
-import pygame
-import datetime
+import random, pygame, datetime
 
 
 class MineSweeper():
@@ -51,7 +49,7 @@ class MineSweeper():
         self.faceHappy = self.faceImageFolder + "happy.png"
         self.faceDeath = self.faceImageFolder + "death.png"
         self.faceCool = self.faceImageFolder + "cool.png"
-        # timer/bomb count topbar counter images
+        # timer/flag counter images
         self.counterImageFolder = self.imageFolder + "counter/"
         self.counter = [0 for x in range(11)]
         for x in range(len(self.counter)):
@@ -68,11 +66,6 @@ class MineSweeper():
                           (0, 123, 123),
                           (0, 0, 0),
                           (123, 123, 123)]
-        
-        # END
-        self.endTextColor = (20, 20, 20)
-        self.endRectangleColor = (220, 220, 220)
-        self.endText = "you win!"
 
     def game_loop(self):
         pygame.init()
@@ -323,5 +316,3 @@ class MineSweeper():
 
 if __name__ == "__main__":
     MineSweeper().game_loop()
-
-#width=10, height=5
