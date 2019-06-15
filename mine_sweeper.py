@@ -27,9 +27,11 @@ class MineSweeper():
         self.clock = pygame.time.Clock()
         pygame.font.init()
         self.arialFont = pygame.font.SysFont('Arial Black', 13)
+        pygame.display.set_caption('Minesweeper')
+        self.imageFolder = "img/"
+        pygame.display.set_icon(pygame.image.load(self.imageFolder + "ico.png"))
 
         # IMAGES
-        self.imageFolder = "img/"
         self.undiscoveredTile = self.imageFolder + "undiscovered_tile.png"
         self.discoveredTile = self.imageFolder + "discovered_tile.png"
         self.flag = self.imageFolder + "flag.png"
@@ -163,7 +165,7 @@ class MineSweeper():
         if self.first_click:
             self.first_click = False
             self.generateGrid()
-            while not((type(self.grid[x][y]) is int) or (self.grid[x][y] == ' ')):
+            while self.grid[x][y] != ' ':
                 self.generateGrid()
 
         if self.clickedGrid[x][y] is False:
