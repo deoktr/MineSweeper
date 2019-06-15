@@ -8,16 +8,18 @@ class MineSweeper():
         self.width = width
         self.height = height
         self.bombCount = bombCount
-        self.grid = [[' ' for x in range(self.width)] for x in range(self.height)]
-        self.placeBombs()
-        self.attributeValue()
-        self.clickedGrid = [[False for x in range(self.width)] for x in range(self.height)]
 
+        # ALGORITHM
+        self.grid = None
+        self.clickedGrid = [[False for x in range(self.width)] for x in range(self.height)]
+        self.first_click = True
         self.gameFailed = False
         self.gameWon = False
+
+        # UI/PYGAME
         self.marge = 10
         self.tileSize = 16
-        self.tileMarge = 1
+        self.sidePadding = 1
         self.windowWidth = self.width * self.tileSize + self.marge * 2
         self.windowHeight = self.height * self.tileSize + self.marge * 2
         self.windowSize = (self.windowWidth, self.windowHeight)
@@ -26,6 +28,7 @@ class MineSweeper():
         pygame.font.init()
         self.arialFont = pygame.font.SysFont('Arial Black', 13)
 
+        # IMAGES
         self.imageFolder = "img/"
         self.undiscoveredTile = self.imageFolder + "undiscovered_tile.png"
         self.discoveredTile = self.imageFolder + "discovered_tile.png"
@@ -34,6 +37,8 @@ class MineSweeper():
         self.flagedBomb = self.imageFolder + "flaged_bomb.png"
         self.explodedBomb = self.imageFolder + "bomb_exploded.png"
         self.question = self.imageFolder + "question.png"
+
+        # COLORS
         self.backgroundColor = (180, 180, 180)
         self.rectangleBackgroundColor = (70, 70, 70)
         self.textColor = [(0, 0, 255),
@@ -45,6 +50,7 @@ class MineSweeper():
                           (0, 0, 0),
                           (123, 123, 123)]
         
+        # END
         self.endTextColor = (20, 20, 20)
         self.endRectangleColor = (220, 220, 220)
         self.endText = "you win!"
@@ -52,7 +58,7 @@ class MineSweeper():
     def game_loop(self):
         pygame.init()
         self.init_display()
-        while True:
+        while ...:
             pygame.display.update()
             self.clock.tick(60)
             for event in pygame.event.get():
@@ -63,16 +69,18 @@ class MineSweeper():
                     x = int((pos[1] - self.marge) / self.tileSize)
                     y = int((pos[0] - self.marge) / self.tileSize)
                     if self.gameFailed or self.gameWon:
+                        # When the game was either won or lost, if the player click it restart
                         self.__init__()
                         self.game_loop()
-                    if event.button == 1:
-                        if self.marge < pos[0] < self.windowWidth - self.marge and self.marge < pos[1] < self.windowHeight - self.marge:
+                    if self.marge < pos[0] < self.windowWidth - self.marge and self.marge < pos[1] < self.windowHeight - self.marge:
+                        # if the click is on the grid
+                        if event.button == 1:
                             self.click_register(x, y)
-                    elif event.button == 3:
-                        self.right_click_register(x, y)
-                    if self.gameFailed is False:
-                        self.display_tiles()
-                    self.win_test()
+                        elif event.button == 3:
+                            self.right_click_register(x, y)
+                        if self.gameFailed is False:
+                            self.display_tiles()
+                        self.win_test()
 
     def init_display(self):
         self.display_background()
@@ -83,8 +91,8 @@ class MineSweeper():
         self.window.fill(
             self.rectangleBackgroundColor,
             pygame.Rect((
-            (self.marge - self.tileMarge, self.marge - self.tileMarge),
-            (self.windowWidth - self.marge * 2 + self.tileMarge * 2, self.windowHeight - self.marge * 2 + self.tileMarge * 2)
+            (self.marge - self.sidePadding, self.marge - self.sidePadding),
+            (self.windowWidth - self.marge * 2 + self.sidePadding * 2, self.windowHeight - self.marge * 2 + self.sidePadding * 2)
         )))
 
     def display_tiles(self):
@@ -100,7 +108,8 @@ class MineSweeper():
                 self.marge + self.tileSize * y)
             )
             if type(self.grid[y][x]) is int:
-                text = self.arialFont.render(str(self.grid[y][x]), False,
+                text = self.arialFont.render(
+                    str(self.grid[y][x]), False,
                     self.textColor[self.grid[y][x] - 1])
                 text_rect = text.get_rect(center=(
                     self.marge + self.tileSize * x + self.tileSize/2,
@@ -125,7 +134,38 @@ class MineSweeper():
                 self.marge + self.tileSize * y)
             )
 
+    def show_bombs(self, exploded_x, exploded_y):
+        # At the end of the game every bombs are shown to the player
+        for x in range(self.width):
+            for y in range(self.height):
+                if self.grid[y][x] == '*':
+                    if self.clickedGrid[y][x] == 'F' or self.clickedGrid[y][x] == '?':
+                        self.window.blit(
+                            pygame.image.load(self.flagedBomb),
+                            (self.marge + self.tileSize * x,
+                            self.marge + self.tileSize * y)
+                        )
+                    else:
+                        self.window.blit(
+                            pygame.image.load(self.bomb),
+                            (self.marge + self.tileSize * x,
+                            self.marge + self.tileSize * y)
+                        )
+
+        self.window.blit(
+            pygame.image.load(self.explodedBomb),
+            (self.marge + self.tileSize * exploded_y,
+            self.marge + self.tileSize * exploded_x)
+        )
+
     def click_register(self, x, y):
+        # Bombs are placed after the first click, preventing the player from clicking on a bomb at first click
+        if self.first_click:
+            self.first_click = False
+            self.generateGrid()
+            while not((type(self.grid[x][y]) is int) or (self.grid[x][y] == ' ')):
+                self.generateGrid()
+
         if self.clickedGrid[x][y] is False:
             self.clickedGrid[x][y] = True
             if self.grid[x][y] == '*':
@@ -150,30 +190,7 @@ class MineSweeper():
                 if 0 <= u <= (self.height - 1) and 0 <= v <= (self.width - 1):
                     if self.grid[u][v] == ' ' or type(self.grid[u][v]) is int:
                         self.click_register(u, v)
-
-    def show_bombs(self, exploded_x, exploded_y):
-        for x in range(self.width):
-            for y in range(self.height):
-                if self.grid[y][x] == '*':
-                    if self.clickedGrid[y][x] == 'F' or self.clickedGrid[y][x] == '?':
-                        self.window.blit(
-                            pygame.image.load(self.flagedBomb),
-                            (self.marge + self.tileSize * x,
-                            self.marge + self.tileSize * y)
-                        )
-                    else:
-                        self.window.blit(
-                            pygame.image.load(self.bomb),
-                            (self.marge + self.tileSize * x,
-                            self.marge + self.tileSize * y)
-                        )
-
-        self.window.blit(
-            pygame.image.load(self.explodedBomb),
-            (self.marge + self.tileSize * exploded_y,
-            self.marge + self.tileSize * exploded_x)
-        )
-
+    
     def win_test(self):
         for x in range(self.width):
             for y in range(self.height):
@@ -182,6 +199,11 @@ class MineSweeper():
                     (self.clickedGrid[y][x] is False and self.grid[y][x] != '*'):
                     return False
         self.gameWon = True
+
+    def generateGrid(self):
+        self.grid = [[' ' for x in range(self.width)] for x in range(self.height)]
+        self.placeBombs()
+        self.attributeValue()
 
     def placeBombs(self):
         bombCount = 0
