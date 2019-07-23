@@ -82,7 +82,7 @@ class MineSweeper():
         """
         pygame.init()
         self.init_display()
-        while ...:
+        while True:
             pygame.display.update()
             self.clock.tick(60)
             for event in pygame.event.get():
