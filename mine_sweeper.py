@@ -33,8 +33,6 @@ class MineSweeper():
         self.windowSize = (self.windowWidth, self.windowHeight)
         self.window = pygame.display.set_mode(self.windowSize, 0, 32)
         self.clock = pygame.time.Clock()
-        pygame.font.init()
-        self.arialFont = pygame.font.SysFont('Arial Black', 13)
         pygame.display.set_caption('Minesweeper')
         self.imageFolder = "img/"
         pygame.display.set_icon(
@@ -50,6 +48,11 @@ class MineSweeper():
         self.explodedBomb = self.imageFolder + "bomb_exploded.png"
         self.question = self.imageFolder + "question.png"
         self.background = self.imageFolder + "background.png"
+        # tile numbers
+        self.numberImageFolder = self.imageFolder + "tiles/"
+        self.number = [0 for x in range(11)]
+        for x in range(len(self.number)):
+            self.number[x] = self.numberImageFolder + str(x) + ".png"
         # face images
         self.faceImageFolder = self.imageFolder + "faces/"
         self.faceHappy = self.faceImageFolder + "happy.png"
@@ -63,17 +66,6 @@ class MineSweeper():
 
         # COLORS
         self.backgroundColor = (180, 180, 180)
-        self.rectangleBackgroundColor = (70, 70, 70)
-        self.textColor = [
-            (0, 0, 255),
-            (0, 123, 0),
-            (255, 0, 0),
-            (0, 0, 123),
-            (123, 0, 0),
-            (0, 123, 123),
-            (0, 0, 0),
-            (123, 123, 123)
-        ]
 
     def game_loop(self):
         """
@@ -245,35 +237,36 @@ class MineSweeper():
         Update the display of a single tile on the grid
         """
         if self.clickedGrid[y][x] is True:
-            self.window.blit(
-                pygame.image.load(self.discoveredTile),
-                self.tilePosition(x, y)
-            )
             if isinstance(self.grid[y][x], int):
-                text = self.arialFont.render(
-                    str(self.grid[y][x]), False,
-                    self.textColor[self.grid[y][x] - 1]
+                # number tile
+                self.window.blit(
+                    pygame.image.load(self.number[self.grid[y][x]]),
+                    self.tilePosition(x, y)
                 )
-                gui_x, gui_y = self.tilePosition(x, y)
-                text_rect = text.get_rect(
-                    center=(
-                        gui_x + self.tileSize/2,
-                        gui_y + self.tileSize/2
-                    )
+
+            else:
+                # empty tile
+                self.window.blit(
+                    pygame.image.load(self.discoveredTile),
+                    self.tilePosition(x, y)
                 )
-                self.window.blit(text, text_rect)
 
         elif self.clickedGrid[y][x] == "F":
+            # flagged tile
             self.window.blit(
                 pygame.image.load(self.flag),
                 self.tilePosition(x, y)
             )
+
         elif self.clickedGrid[y][x] == "?":
+            # question tile
             self.window.blit(
                 pygame.image.load(self.question),
                 self.tilePosition(x, y)
             )
+
         else:
+            # undiscovered tile
             self.window.blit(
                 pygame.image.load(self.undiscoveredTile),
                 self.tilePosition(x, y)
