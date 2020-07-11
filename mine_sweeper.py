@@ -8,10 +8,10 @@ import random
 
 
 class MineSweeper:
-    def __init__(self, width=30, height=16, bombCount=99):
+    def __init__(self, width=30, height=16, bomb_count=99):
         self.width = width
         self.height = height
-        self.bombCount = bombCount
+        self.bomb_count = bomb_count
 
         # ALGORITHM
         self.grid = None
@@ -21,7 +21,7 @@ class MineSweeper:
         self.first_click = True
         self.game_failed = False
         self.game_won = False
-        self.bomb_left = self.bombCount
+        self.bomb_left = self.bomb_count
         self.timer = 0
         self.start_time = None
 
@@ -141,7 +141,7 @@ class MineSweeper:
         When a click is registered on the face restart the game
         """
         self.__init__(
-            width=self.width, height=self.height, bombCount=self.bombCount,
+            width=self.width, height=self.height, bomb_count=self.bomb_count,
         )
         self.game_loop()
 
@@ -385,13 +385,13 @@ class MineSweeper:
         """
         Randomly place bombs on the grid
         """
-        bombCount = 0
-        while bombCount != self.bombCount:
+        bomb_count = 0
+        while bomb_count != self.bomb_count:
             x = random.randint(0, self.height - 1)
             y = random.randint(0, self.width - 1)
             if self.grid[x][y] != "*":
                 self.grid[x][y] = "*"
-                bombCount += 1
+                bomb_count += 1
 
     def attributeValue(self):
         """
@@ -421,4 +421,5 @@ class MineSweeper:
 
 
 if __name__ == "__main__":
-    MineSweeper().game_loop()
+    session = MineSweeper()
+    session.game_loop()
