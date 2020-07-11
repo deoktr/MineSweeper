@@ -84,61 +84,66 @@ class MineSweeper:
                 if event.type == pygame.QUIT:
                     quit()
                 elif event.type == pygame.MOUSEBUTTONDOWN:
-                    pos = pygame.mouse.get_pos()
-
-                    # if the click is on the grid
-                    if (
-                        self.margin < pos[0] < self.window_width - self.margin
-                        and self.margin * 2 + self.top_bar
-                        < pos[1]
-                        < self.window_height - self.margin
-                        and self.game_failed is False
-                        and self.game_won is False
-                    ):
-
-                        x = int(
-                            (pos[1] - self.margin * 2 - self.top_bar) / self.tile_size
-                        )
-                        y = int((pos[0] - self.margin) / self.tile_size)
-
-                        if event.button == 1:
-                            self.click_register(x, y)
-                            if self.game_failed is False:
-                                self.display_tiles()
-                        elif event.button == 3:
-                            self.right_click_register(x, y)
-
-                        self.win_test()
-
-                    # if the click is on the top bar
-                    elif (
-                        self.margin < pos[0] < self.window_width - self.margin
-                        and self.margin < pos[1] < self.top_bar + self.margin
-                    ):
-
-                        if (
-                            self.window_width / 2 - self.face_size / 2
-                            < pos[0]
-                            < self.window_width / 2
-                            - self.face_size / 2
-                            + self.face_size
-                            and self.margin + self.top_bar / 2 - self.face_size / 2
-                            < pos[1]
-                            < self.margin
-                            + self.top_bar / 2
-                            - self.face_size / 2
-                            + self.face_size
-                        ):
-
-                            self.__init__(
-                                width=self.width,
-                                height=self.height,
-                                bombCount=self.bombCount,
-                            )
-                            self.game_loop()
-                    self.display_top_bar()
-
+                    self.mouse_action(event)
             self.updateTimer()
+
+    def mouse_action(self, event):
+        """
+        When a click is registered on the window
+        """
+        pos = pygame.mouse.get_pos()
+
+        # if the click is on the grid
+        if (
+            self.margin < pos[0] < self.window_width - self.margin
+            and self.margin * 2 + self.top_bar
+            < pos[1]
+            < self.window_height - self.margin
+            and self.game_failed is False
+            and self.game_won is False
+        ):
+            self.grid_click(event.button, pos)
+
+        # if the click is on the face
+        elif (
+            self.window_width / 2 - self.face_size / 2
+            < pos[0]
+            < self.window_width / 2 - self.face_size / 2 + self.face_size
+            and self.margin + self.top_bar / 2 - self.face_size / 2
+            < pos[1]
+            < self.margin + self.top_bar / 2 - self.face_size / 2 + self.face_size
+        ):
+            self.face_click()
+
+        self.display_top_bar()
+
+    def grid_click(self, button, pos):
+        """
+        When a click is registered on the grid
+        """
+        x = int((pos[1] - self.margin * 2 - self.top_bar) / self.tile_size)
+        y = int((pos[0] - self.margin) / self.tile_size)
+
+        # left click
+        if button == 1:
+            self.click_register(x, y)
+            if self.game_failed is False:
+                self.display_tiles()
+
+        # right click
+        elif button == 3:
+            self.right_click_register(x, y)
+
+        self.win_test()
+
+    def face_click(self):
+        """
+        When a click is registered on the face restart the game
+        """
+        self.__init__(
+            width=self.width, height=self.height, bombCount=self.bombCount,
+        )
+        self.game_loop()
 
     def init_display(self):
         """
@@ -209,10 +214,12 @@ class MineSweeper:
         # reset the top bar
         self.window.fill(
             self.background_color,
-            pygame.Rect((
-                (self.margin, self.margin),
-                (self.window_width - self.margin * 2, self.top_bar)
-            ))
+            pygame.Rect(
+                (
+                    (self.margin, self.margin),
+                    (self.window_width - self.margin * 2, self.top_bar),
+                )
+            ),
         )
 
         self.display_face()
