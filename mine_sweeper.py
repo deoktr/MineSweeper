@@ -1,9 +1,13 @@
+#
+# Remake of the classic Minesweeper game
+#
+
 import datetime
 import pygame
 import random
 
 
-class MineSweeper():
+class MineSweeper:
     def __init__(self, width=30, height=16, bombCount=99):
         self.width = width
         self.height = height
@@ -11,61 +15,61 @@ class MineSweeper():
 
         # ALGORITHM
         self.grid = None
-        self.clickedGrid = [
+        self.clicked_grid = [
             [False for x in range(self.width)]
             for x in range(self.height)
         ]
         self.first_click = True
-        self.gameFailed = False
-        self.gameWon = False
-        self.bombLeft = self.bombCount
+        self.game_failed = False
+        self.game_won = False
+        self.bomb_left = self.bombCount
         self.timer = 0
-        self.startTime = None
+        self.start_time = None
 
         # UI/PYGAME
         self.margin = 10
-        self.topBar = 32
-        self.tileSize = 16
+        self.top_bar = 32
+        self.tile_size = 16
         self.border = 1
-        self.faceSize = 26
-        self.windowWidth = self.width * self.tileSize + self.margin * 2
-        self.windowHeight = self.height * self.tileSize + self.margin * 3 + self.topBar
-        self.windowSize = (self.windowWidth, self.windowHeight)
-        self.window = pygame.display.set_mode(self.windowSize, 0, 32)
+        self.face_size = 26
+        self.window_width = self.width * self.tile_size + self.margin * 2
+        self.window_height = self.height * self.tile_size + self.margin * 3 + self.top_bar
+        self.window_size = (self.window_width, self.window_height)
+        self.window = pygame.display.set_mode(self.window_size, 0, 32)
         self.clock = pygame.time.Clock()
         pygame.display.set_caption('Minesweeper')
-        self.imageFolder = "img/"
+        self.image_folder = "img/"
         pygame.display.set_icon(
-            pygame.image.load(self.imageFolder + "ico.png")
+            pygame.image.load(self.image_folder + "ico.png")
         )
 
         # IMAGES
-        self.undiscoveredTile = self.imageFolder + "undiscovered_tile.png"
-        self.discoveredTile = self.imageFolder + "discovered_tile.png"
-        self.flag = self.imageFolder + "flag.png"
-        self.bomb = self.imageFolder + "bomb.png"
-        self.flagedBomb = self.imageFolder + "flaged_bomb.png"
-        self.explodedBomb = self.imageFolder + "bomb_exploded.png"
-        self.question = self.imageFolder + "question.png"
-        self.background = self.imageFolder + "background.png"
+        self.undiscovered_tile = self.image_folder + "undiscovered_tile.png"
+        self.discovered_tile = self.image_folder + "discovered_tile.png"
+        self.flag = self.image_folder + "flag.png"
+        self.bomb = self.image_folder + "bomb.png"
+        self.flaged_bomb = self.image_folder + "flaged_bomb.png"
+        self.exploded_bomb = self.image_folder + "bomb_exploded.png"
+        self.question = self.image_folder + "question.png"
+        self.background = self.image_folder + "background.png"
         # tile numbers
-        self.numberImageFolder = self.imageFolder + "tiles/"
+        self.number_image_folder = self.image_folder + "tiles/"
         self.number = [0 for x in range(11)]
         for x in range(len(self.number)):
-            self.number[x] = self.numberImageFolder + str(x) + ".png"
+            self.number[x] = self.number_image_folder + str(x) + ".png"
         # face images
-        self.faceImageFolder = self.imageFolder + "faces/"
-        self.faceHappy = self.faceImageFolder + "happy.png"
-        self.faceDeath = self.faceImageFolder + "death.png"
-        self.faceCool = self.faceImageFolder + "cool.png"
+        self.face_image_folder = self.image_folder + "faces/"
+        self.face_happy = self.face_image_folder + "happy.png"
+        self.face_death = self.face_image_folder + "death.png"
+        self.face_cool = self.face_image_folder + "cool.png"
         # timer/flag counter images
-        self.counterImageFolder = self.imageFolder + "counter/"
+        self.counter_image_folder = self.image_folder + "counter/"
         self.counter = [0 for x in range(11)]
         for x in range(len(self.counter)):
-            self.counter[x] = self.counterImageFolder + str(x) + ".png"
+            self.counter[x] = self.counter_image_folder + str(x) + ".png"
 
         # COLORS
-        self.backgroundColor = (180, 180, 180)
+        self.background_color = (180, 180, 180)
 
     def game_loop(self):
         """
@@ -84,17 +88,17 @@ class MineSweeper():
                     pos = pygame.mouse.get_pos()
 
                     # if the click is on the grid
-                    if self.margin < pos[0] < self.windowWidth - self.margin and \
-                         self.margin * 2 + self.topBar < pos[1] < self.windowHeight - self.margin and \
-                         self.gameFailed is False and \
-                         self.gameWon is False:
-                        
-                        x = int((pos[1] - self.margin * 2 - self.topBar) / self.tileSize)
-                        y = int((pos[0] - self.margin) / self.tileSize)
+                    if self.margin < pos[0] < self.window_width - self.margin and \
+                        self.margin * 2 + self.top_bar < pos[1] < self.window_height - self.margin and \
+                        self.game_failed is False and \
+                        self.game_won is False:
+
+                        x = int((pos[1] - self.margin * 2 - self.top_bar) / self.tile_size)
+                        y = int((pos[0] - self.margin) / self.tile_size)
 
                         if event.button == 1:
                             self.click_register(x, y)
-                            if self.gameFailed is False:
+                            if self.game_failed is False:
                                 self.display_tiles()
                         elif event.button == 3:
                             self.right_click_register(x, y)
@@ -102,11 +106,11 @@ class MineSweeper():
                         self.win_test()
 
                     # if the click is on the top bar
-                    elif self.margin < pos[0] < self.windowWidth - self.margin and \
-                            self.margin < pos[1] < self.topBar + self.margin:
+                    elif self.margin < pos[0] < self.window_width - self.margin and \
+                            self.margin < pos[1] < self.top_bar + self.margin:
 
-                        if self.windowWidth / 2 - self.faceSize / 2 < pos[0] < self.windowWidth / 2 - self.faceSize / 2 + self.faceSize and \
-                             self.margin + self.topBar / 2 - self.faceSize / 2 < pos[1] < self.margin + self.topBar / 2 - self.faceSize / 2 + self.faceSize:
+                        if self.window_width / 2 - self.face_size / 2 < pos[0] < self.window_width / 2 - self.face_size / 2 + self.face_size and \
+                             self.margin + self.top_bar / 2 - self.face_size / 2 < pos[1] < self.margin + self.top_bar / 2 - self.face_size / 2 + self.face_size:
 
                             self.__init__(
                                 width=self.width,
@@ -139,24 +143,24 @@ class MineSweeper():
         """
         Update the face on the top bar
         """
-        if self.gameFailed:
-            face = self.faceDeath
-        elif self.gameWon:
-            face = self.faceCool
+        if self.game_failed:
+            face = self.face_death
+        elif self.game_won:
+            face = self.face_cool
         else:
-            face = self.faceHappy
+            face = self.face_happy
 
         self.window.blit(
             pygame.image.load(face),
-            (self.windowWidth / 2 - self.faceSize / 2,
-             self.margin + self.topBar / 2 - self.faceSize / 2)
+            (self.window_width / 2 - self.face_size / 2,
+             self.margin + self.top_bar / 2 - self.face_size / 2)
         )
 
     def display_bomb_counter(self):
         """
         Update the bomb counter
         """
-        c = "000" + str(self.bombLeft)
+        c = "000" + str(self.bomb_left)
         for x in range(3):
             n = c[-(3-x)]
             if n == '-':
@@ -174,7 +178,7 @@ class MineSweeper():
         c = "000" + str(self.timer)
         for x in range(3):
             self.display_counter_digit(
-                self.windowWidth - (self.margin + 6 + 13 * (3-x)),
+                self.window_width - (self.margin + 6 + 13 * (3-x)),
                 self.margin + 4,
                 c[-(3-x)]
             )
@@ -194,10 +198,10 @@ class MineSweeper():
         """
         # reset the top bar
         self.window.fill(
-            self.backgroundColor,
+            self.background_color,
             pygame.Rect((
                 (self.margin, self.margin),
-                (self.windowWidth - self.margin * 2, self.topBar)
+                (self.window_width - self.margin * 2, self.top_bar)
             ))
         )
 
@@ -209,10 +213,10 @@ class MineSweeper():
         """
         Update the timer displayed to the player
         """
-        if self.startTime is not None and self.gameFailed is False and \
-             self.gameWon is False:
+        if self.start_time is not None and self.game_failed is False and \
+             self.game_won is False:
             self.timer = int(
-                (datetime.datetime.now() - self.startTime).total_seconds()
+                (datetime.datetime.now() - self.start_time).total_seconds()
             )
         self.display_timer_counter()
 
@@ -220,8 +224,8 @@ class MineSweeper():
         """
         convert a grid position into gui position of a tile
         """
-        gui_x = self.margin + self.tileSize * x
-        gui_y = self.margin * 2 + self.tileSize * y + self.topBar
+        gui_x = self.margin + self.tile_size * x
+        gui_y = self.margin * 2 + self.tile_size * y + self.top_bar
         return gui_x, gui_y
 
     def display_tiles(self):
@@ -236,7 +240,7 @@ class MineSweeper():
         """
         Update the display of a single tile on the grid
         """
-        if self.clickedGrid[y][x] is True:
+        if self.clicked_grid[y][x] is True:
             if isinstance(self.grid[y][x], int):
                 # number tile
                 self.window.blit(
@@ -247,18 +251,18 @@ class MineSweeper():
             else:
                 # empty tile
                 self.window.blit(
-                    pygame.image.load(self.discoveredTile),
+                    pygame.image.load(self.discovered_tile),
                     self.tilePosition(x, y)
                 )
 
-        elif self.clickedGrid[y][x] == "F":
+        elif self.clicked_grid[y][x] == "F":
             # flagged tile
             self.window.blit(
                 pygame.image.load(self.flag),
                 self.tilePosition(x, y)
             )
 
-        elif self.clickedGrid[y][x] == "?":
+        elif self.clicked_grid[y][x] == "?":
             # question tile
             self.window.blit(
                 pygame.image.load(self.question),
@@ -268,7 +272,7 @@ class MineSweeper():
         else:
             # undiscovered tile
             self.window.blit(
-                pygame.image.load(self.undiscoveredTile),
+                pygame.image.load(self.undiscovered_tile),
                 self.tilePosition(x, y)
             )
 
@@ -279,10 +283,10 @@ class MineSweeper():
         for x in range(self.width):
             for y in range(self.height):
                 if self.grid[y][x] == '*':
-                    if self.clickedGrid[y][x] == 'F' or \
-                         self.clickedGrid[y][x] == '?':
+                    if self.clicked_grid[y][x] == 'F' or \
+                         self.clicked_grid[y][x] == '?':
                         self.window.blit(
-                            pygame.image.load(self.flagedBomb),
+                            pygame.image.load(self.flaged_bomb),
                             self.tilePosition(x, y)
                         )
                     else:
@@ -292,7 +296,7 @@ class MineSweeper():
                         )
 
         self.window.blit(
-            pygame.image.load(self.explodedBomb),
+            pygame.image.load(self.exploded_bomb),
             self.tilePosition(exploded_y, exploded_x)
         )
 
@@ -307,12 +311,12 @@ class MineSweeper():
             self.generateGrid()
             while self.grid[x][y] != ' ':
                 self.generateGrid()
-            self.startTime = datetime.datetime.now()
+            self.start_time = datetime.datetime.now()
 
-        if self.clickedGrid[x][y] is False:
-            self.clickedGrid[x][y] = True
+        if self.clicked_grid[x][y] is False:
+            self.clicked_grid[x][y] = True
             if self.grid[x][y] == '*':
-                self.gameFailed = True
+                self.game_failed = True
                 self.show_bombs(x, y)
             elif self.grid[x][y] == ' ':
                 self.discover_tiles(x, y)
@@ -321,14 +325,14 @@ class MineSweeper():
         """
         When a user right click on the tile at position x, y
         """
-        if self.clickedGrid[x][y] == 'F':
-            self.clickedGrid[x][y] = '?'
-            self.bombLeft += 1
-        elif self.clickedGrid[x][y] == '?':
-            self.clickedGrid[x][y] = False
-        elif self.clickedGrid[x][y] is False:
-            self.clickedGrid[x][y] = 'F'
-            self.bombLeft -= 1
+        if self.clicked_grid[x][y] == 'F':
+            self.clicked_grid[x][y] = '?'
+            self.bomb_left += 1
+        elif self.clicked_grid[x][y] == '?':
+            self.clicked_grid[x][y] = False
+        elif self.clicked_grid[x][y] is False:
+            self.clicked_grid[x][y] = 'F'
+            self.bomb_left -= 1
         self.display_one_tile(y, x)
 
     def discover_tiles(self, x, y):
@@ -347,16 +351,16 @@ class MineSweeper():
     def win_test(self):
         """
         Test if player has won the game or not
-        and update self.gameWon
+        and update self.game_won
         """
         if self.grid is not None:
             for x in range(self.width):
                 for y in range(self.height):
-                    if (self.grid[y][x] == '*' and self.clickedGrid[y][x] != 'F') or \
-                         (self.clickedGrid[y][x] == 'F' and self.grid[y][x] != '*') or \
-                         (self.clickedGrid[y][x] is False and self.grid[y][x] != '*'):
+                    if (self.grid[y][x] == '*' and self.clicked_grid[y][x] != 'F') or \
+                         (self.clicked_grid[y][x] == 'F' and self.grid[y][x] != '*') or \
+                         (self.clicked_grid[y][x] is False and self.grid[y][x] != '*'):
                         return None
-            self.gameWon = True
+            self.game_won = True
 
     def generateGrid(self):
         """
