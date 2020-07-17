@@ -3,11 +3,15 @@
 #
 
 import datetime
-import pygame
 import random
+import pygame
 
 
 class MineSweeper:
+    """
+    Classic MineSweeper remake
+    """
+
     def __init__(self, width=30, height=16, bomb_count=99):
         self.width = width
         self.height = height
@@ -72,11 +76,11 @@ class MineSweeper:
 
     def game_loop(self):
         """
-        Game loop with different actions based on user input type (right-left click)
-        and click position (top-bar/grid)
+        Game loop with different actions based on user input type
+        (right-left click) and click position (top-bar/grid)
         """
         pygame.init()
-        self.init_display()
+        self.__init_display()
         while True:
             pygame.display.update()
             self.clock.tick(60)
@@ -84,10 +88,10 @@ class MineSweeper:
                 if event.type == pygame.QUIT:
                     quit()
                 elif event.type == pygame.MOUSEBUTTONDOWN:
-                    self.mouse_action(event)
-            self.updateTimer()
+                    self.__mouse_action(event)
+            self.__update_timer()
 
-    def mouse_action(self, event):
+    def __mouse_action(self, event):
         """
         When a click is registered on the window
         """
@@ -102,7 +106,7 @@ class MineSweeper:
             and self.game_failed is False
             and self.game_won is False
         ):
-            self.grid_click(event.button, pos)
+            self.__grid_click(event.button, pos)
 
         # if the click is on the face
         elif (
@@ -113,11 +117,11 @@ class MineSweeper:
             < pos[1]
             < self.margin + self.top_bar / 2 - self.face_size / 2 + self.face_size
         ):
-            self.face_click()
+            self.__face_click()
 
-        self.display_top_bar()
+        self.__display_top_bar()
 
-    def grid_click(self, button, pos):
+    def __grid_click(self, button, pos):
         """
         When a click is registered on the grid
         """
@@ -126,17 +130,17 @@ class MineSweeper:
 
         # left click
         if button == 1:
-            self.click_register(x, y)
+            self.__click_register(x, y)
             if self.game_failed is False:
-                self.display_tiles()
+                self.__display_tiles()
 
         # right click
         elif button == 3:
-            self.right_click_register(x, y)
+            self.__right_click_register(x, y)
 
-        self.win_test()
+        self.__win_test()
 
-    def face_click(self):
+    def __face_click(self):
         """
         When a click is registered on the face restart the game
         """
@@ -145,15 +149,15 @@ class MineSweeper:
         )
         self.game_loop()
 
-    def init_display(self):
+    def __init_display(self):
         """
         Initialize the display by updating background, tiles and top bar
         """
-        self.display_background()
-        self.display_tiles()
-        self.display_top_bar()
+        self.__display_background()
+        self.__display_tiles()
+        self.__display_top_bar()
 
-    def display_background(self):
+    def __display_background(self):
         """
         Update the background image
         """
@@ -178,36 +182,38 @@ class MineSweeper:
             ),
         )
 
-    def display_bomb_counter(self):
+    def __display_bomb_counter(self):
         """
         Update the bomb counter
         """
-        c = "000" + str(self.bomb_left)
+        count = "000" + str(self.bomb_left)
         for x in range(3):
-            n = c[-(3 - x)]
-            if n == "-":
-                n = 10
-            self.display_counter_digit(self.margin + 6 + 13 * x, self.margin + 4, n)
+            number = count[-(3 - x)]
+            if number == "-":
+                number = 10
+            self.__display_counter_digit(
+                self.margin + 6 + 13 * x, self.margin + 4, number
+            )
 
-    def display_timer_counter(self):
+    def __display_timer_counter(self):
         """
         Update the timer displayed
         """
-        c = "000" + str(self.timer)
+        count = "000" + str(self.timer)
         for x in range(3):
-            self.display_counter_digit(
+            self.__display_counter_digit(
                 self.window_width - (self.margin + 6 + 13 * (3 - x)),
                 self.margin + 4,
-                c[-(3 - x)],
+                count[-(3 - x)],
             )
 
-    def display_counter_digit(self, x, y, digit):
+    def __display_counter_digit(self, x, y, digit):
         """
         Update a single digit of either the bomb counter or the timer
         """
         self.window.blit(pygame.image.load(self.counter[int(digit)]), (x, y))
 
-    def display_top_bar(self):
+    def __display_top_bar(self):
         """
         Update the top bar, with timer, bomb counter and face
         """
@@ -223,10 +229,10 @@ class MineSweeper:
         )
 
         self.display_face()
-        self.display_bomb_counter()
-        self.display_timer_counter()
+        self.__display_bomb_counter()
+        self.__display_timer_counter()
 
-    def updateTimer(self):
+    def __update_timer(self):
         """
         Update the timer displayed to the player
         """
@@ -238,9 +244,9 @@ class MineSweeper:
             self.timer = int(
                 (datetime.datetime.now() - self.start_time).total_seconds()
             )
-        self.display_timer_counter()
+        self.__display_timer_counter()
 
-    def tilePosition(self, x, y):
+    def __tile_position(self, x, y):
         """
         convert a grid position into gui position of a tile
         """
@@ -248,15 +254,15 @@ class MineSweeper:
         gui_y = self.margin * 2 + self.tile_size * y + self.top_bar
         return gui_x, gui_y
 
-    def display_tiles(self):
+    def __display_tiles(self):
         """
         Update the display of every tiles on the grid
         """
         for x in range(self.width):
             for y in range(self.height):
-                self.display_one_tile(x, y)
+                self.__display_one_tile(x, y)
 
-    def display_one_tile(self, x, y):
+    def __display_one_tile(self, x, y):
         """
         Update the display of a single tile on the grid
         """
@@ -265,30 +271,32 @@ class MineSweeper:
                 # number tile
                 self.window.blit(
                     pygame.image.load(self.number[self.grid[y][x]]),
-                    self.tilePosition(x, y),
+                    self.__tile_position(x, y),
                 )
 
             else:
                 # empty tile
                 self.window.blit(
-                    pygame.image.load(self.discovered_tile), self.tilePosition(x, y)
+                    pygame.image.load(self.discovered_tile), self.__tile_position(x, y)
                 )
 
         elif self.clicked_grid[y][x] == "F":
             # flagged tile
-            self.window.blit(pygame.image.load(self.flag), self.tilePosition(x, y))
+            self.window.blit(pygame.image.load(self.flag), self.__tile_position(x, y))
 
         elif self.clicked_grid[y][x] == "?":
             # question tile
-            self.window.blit(pygame.image.load(self.question), self.tilePosition(x, y))
+            self.window.blit(
+                pygame.image.load(self.question), self.__tile_position(x, y)
+            )
 
         else:
             # undiscovered tile
             self.window.blit(
-                pygame.image.load(self.undiscovered_tile), self.tilePosition(x, y)
+                pygame.image.load(self.undiscovered_tile), self.__tile_position(x, y)
             )
 
-    def show_bombs(self, exploded_x, exploded_y):
+    def __show_bombs(self, exploded_x, exploded_y):
         """
         At the end of the game every bombs are shown to the player
         """
@@ -297,19 +305,20 @@ class MineSweeper:
                 if self.grid[y][x] == "*":
                     if self.clicked_grid[y][x] == "F" or self.clicked_grid[y][x] == "?":
                         self.window.blit(
-                            pygame.image.load(self.flaged_bomb), self.tilePosition(x, y)
+                            pygame.image.load(self.flaged_bomb),
+                            self.__tile_position(x, y),
                         )
                     else:
                         self.window.blit(
-                            pygame.image.load(self.bomb), self.tilePosition(x, y)
+                            pygame.image.load(self.bomb), self.__tile_position(x, y)
                         )
 
         self.window.blit(
             pygame.image.load(self.exploded_bomb),
-            self.tilePosition(exploded_y, exploded_x),
+            self.__tile_position(exploded_y, exploded_x),
         )
 
-    def click_register(self, x, y):
+    def __click_register(self, x, y):
         """
         When a user left click on the tile at position x, y
         """
@@ -317,20 +326,20 @@ class MineSweeper:
         # player from clicking on a bomb at first click
         if self.first_click:
             self.first_click = False
-            self.generateGrid()
+            self.__generate_grid()
             while self.grid[x][y] != " ":
-                self.generateGrid()
+                self.__generate_grid()
             self.start_time = datetime.datetime.now()
 
         if self.clicked_grid[x][y] is False:
             self.clicked_grid[x][y] = True
             if self.grid[x][y] == "*":
                 self.game_failed = True
-                self.show_bombs(x, y)
+                self.__show_bombs(x, y)
             elif self.grid[x][y] == " ":
-                self.discover_tiles(x, y)
+                self.__discover_tiles(x, y)
 
-    def right_click_register(self, x, y):
+    def __right_click_register(self, x, y):
         """
         When a user right click on the tile at position x, y
         """
@@ -342,9 +351,9 @@ class MineSweeper:
         elif self.clicked_grid[x][y] is False:
             self.clicked_grid[x][y] = "F"
             self.bomb_left -= 1
-        self.display_one_tile(y, x)
+        self.__display_one_tile(y, x)
 
-    def discover_tiles(self, x, y):
+    def __discover_tiles(self, x, y):
         """
         Will pass on all 8 adjacent tiles and
         if they are either number or empty it will be recursive
@@ -355,9 +364,9 @@ class MineSweeper:
                 v = y + m
                 if 0 <= u <= (self.height - 1) and 0 <= v <= (self.width - 1):
                     if self.grid[u][v] == " " or isinstance(self.grid[u][v], int):
-                        self.click_register(u, v)
+                        self.__click_register(u, v)
 
-    def win_test(self):
+    def __win_test(self):
         """
         Test if player has won the game or not
         and update self.game_won
@@ -370,18 +379,18 @@ class MineSweeper:
                         or (self.clicked_grid[y][x] == "F" and self.grid[y][x] != "*")
                         or (self.clicked_grid[y][x] is False and self.grid[y][x] != "*")
                     ):
-                        return None
+                        return
             self.game_won = True
 
-    def generateGrid(self):
+    def __generate_grid(self):
         """
         Generate a random grid filled with bomb and with numbers
         """
         self.grid = [[" " for x in range(self.width)] for x in range(self.height)]
-        self.placeBombs()
-        self.attributeValue()
+        self.__place_bombs()
+        self.__attribute_value()
 
-    def placeBombs(self):
+    def __place_bombs(self):
         """
         Randomly place bombs on the grid
         """
@@ -393,7 +402,7 @@ class MineSweeper:
                 self.grid[x][y] = "*"
                 bomb_count += 1
 
-    def attributeValue(self):
+    def __attribute_value(self):
         """
         Place numbers on the grid based on the number of bomb in
         the 8 adjacents tiles
